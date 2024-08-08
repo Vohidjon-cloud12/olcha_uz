@@ -9,6 +9,9 @@ urlpatterns = [
     path('category/<slug:slug>/update/', views.UpdateCategoryView.as_view(), name='category-update'),
 
     path('products/', views.ProductListView.as_view(), name='product-list'),
-    path('products/<slug:slug>/', views.ProductDetail.as_view(), name='product-detail')
+    path('products/<slug:slug>/', views.ProductDetail.as_view(), name='product-detail'),
+    # Group urls
+    path('group-list/', views.GroupListView.as_view(), name='group-list'),
+    path('group/<slug:slug>/', views.GroupDetailApiView.as_view(), name='group-detail'),
     ]
 
