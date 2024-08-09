@@ -2,8 +2,10 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import generics, status
+from rest_framework.views import APIView
+
 from app.models import Category, Product, Group
-from app.serializers import CategorySerializer, ProductSerializer, GroupSerializer
+from app.serializers import CategorySerializer, ProductSerializer, GroupSerializer, ProductDetailSerializer
 
 
 class CategoryListApiView(generics.ListAPIView):
@@ -87,39 +89,34 @@ class GroupListView(generics.ListAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
 
-
 class GroupDetailApiView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     lookup_field = 'slug'
 
 # /views of products
-class ProductListView(generics.ListCreateAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-
-    class ProductListView(generics.ListCreateAPIView):
-        queryset = Product.objects.all()
-        serializer_class = ProductSerializer
-        lookup_field = 'slug'
-
-        def get_queryset(self):
-            category_slug = self.kwargs.get('category_slug')
-            group_slug = self.kwargs.get('group_slug')
-
-            queryset = Product.objects.all()
-
-            if category_slug and group_slug:
-                queryset = queryset.filter(group__category__slug=category_slug, group__slug=group_slug)
-            elif category_slug:
-                queryset = queryset.filter(category__slug=category_slug)
-            elif group_slug:
-                queryset = queryset.filter(group__slug=group_slug)
-
-            return queryset
+class ProductList(APIView):
+    def get(self, request, category_slug, group_slug):
+        products = Product.objects.filter(group__category__slug=category_slug, group__slug=group_slug)
+        serializer = ProductSerializer(products, many=True, context={'request': request})
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-class ProductDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    lookup_field = 'slug'
+class ProductDetail(APIView):
+    def get(self, request, category_slug, group_slug, product_slug):
+        product = Product.objects.get(slug=product_slug)
+        serializer = ProductDetailSerializer(product)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def post(self, request, category_slug, group_slug, product_slug):
+        product = Product.objects.get(slug=product_slug)
+        serializer = ProductDetailSerializer(product, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, category_slug, group_slug, product_slug):
+        product = Product.objects.get(slug=product_slug)
+        product.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
