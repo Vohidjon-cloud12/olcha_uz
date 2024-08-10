@@ -4,8 +4,8 @@ from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.views import APIView
 
-from app.models import Category, Product, Group
-from app.serializers import CategorySerializer, ProductSerializer, GroupSerializer, ProductDetailSerializer
+from app.models import Category, Product, Group, Attribute
+from app.serializers import CategorySerializer, ProductSerializer, GroupSerializer, ProductDetailSerializer, AttributeSerializer
 
 
 class CategoryListApiView(generics.ListAPIView):
@@ -84,15 +84,16 @@ class DeleteCategoryView(generics.DestroyAPIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
 class GroupListView(generics.ListAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
+
 
 class GroupDetailApiView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     lookup_field = 'slug'
+
 
 # /views of products
 class ProductList(APIView):
@@ -100,6 +101,7 @@ class ProductList(APIView):
         products = Product.objects.filter(group__category__slug=category_slug, group__slug=group_slug)
         serializer = ProductSerializer(products, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 
 class ProductDetail(APIView):
@@ -119,4 +121,56 @@ class ProductDetail(APIView):
     def delete(self, request, category_slug, group_slug, product_slug):
         product = Product.objects.get(slug=product_slug)
         product.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    # atrributeApiView
+    # views.py
+
+
+from rest_framework.views import APIView
+
+
+class AttributeListCreateAPIView(APIView):
+    def get(self, request):
+        attributes = Attribute.objects.all()
+        serializer = AttributeSerializer(attributes, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = AttributeSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AttributeDetailAPIView(APIView):
+    def get_object(self, pk):
+        try:
+            return Attribute.objects.get(pk=pk)
+        except Attribute.DoesNotExist:
+            return None
+
+    def get(self, request, pk):
+        attribute = self.get_object(pk)
+        if attribute is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        serializer = AttributeSerializer(attribute)
+        return Response(serializer.data)
+
+    def put(self, request, pk):
+        attribute = self.get_object(pk)
+        if attribute is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        serializer = AttributeSerializer(attribute, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, pk):
+        attribute = self.get_object(pk)
+        if attribute is None:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+        attribute.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

@@ -1,8 +1,9 @@
 from django.urls import path
 
 from app import views
+
 urlpatterns = [
-    path('categories/',views.CategoryListApiView.as_view(), name='categories'),
+    path('categories/', views.CategoryListApiView.as_view(), name='categories'),
     path('category/<slug:slug>/', views.CategoryDetail.as_view(), name='category-detail'),
     path('category-create/', views.CreateCategoryView.as_view(), name='category-create'),
     path('category/<slug:slug>/delete/', views.DeleteCategoryView.as_view(), name='category-delete'),
@@ -11,5 +12,6 @@ urlpatterns = [
     path('products/<slug:slug>/', views.ProductDetail.as_view(), name='product-detail'),
     path('group-list/', views.GroupListView.as_view(), name='group-list'),
     path('group/<slug:slug>/', views.GroupDetailApiView.as_view(), name='group-detail'),
-    ]
-
+    path('attributes/', views.AttributeListCreateAPIView.as_view(), name='attribute-list-create'),
+    path('attributes/<int:pk>/', views.AttributeDetailAPIView.as_view(), name='attribute-detail'),
+]

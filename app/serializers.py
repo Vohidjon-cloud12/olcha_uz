@@ -1,6 +1,6 @@
 from django.db.models import Avg
 from rest_framework import serializers
-from app.models import Category, Product, Group
+from app.models import Category, Product, Group, Attribute
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -50,4 +50,9 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         model = Product
         fields = '__all__'
 
+
+class AttributeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Attribute
+        fields = '__all__'
 
