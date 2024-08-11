@@ -51,8 +51,24 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class AttributeSerializer(serializers.ModelSerializer):
+class ProductAttributeSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Attribute
-        fields = '__all__'
+        model = Product
+        fields = ['id', 'name', 'slug', 'attributes']
 
+    # class Meta:
+    #     model = Category
+    #     fields = '__all__'
+    class AttributeSerializer(serializers.ModelSerializer):
+        attributes = serializers.SerializerMethodField()
+
+        def get_attributes(self, products):
+            attributes = Attribute.objects.filter(product=products.id)
+            attributes_dict = {}
+            for attribute in attributes:
+                attributes_dict[attribute.key.name] = attribute.value.name
+            return attributes_dict
+
+        class Meta:
+            model = Product
+            fields = ['id', 'name', 'slug', 'attributes']

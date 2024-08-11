@@ -12,6 +12,5 @@ urlpatterns = [
     path('products/<slug:slug>/', views.ProductDetail.as_view(), name='product-detail'),
     path('group-list/', views.GroupListView.as_view(), name='group-list'),
     path('group/<slug:slug>/', views.GroupDetailApiView.as_view(), name='group-detail'),
-    path('attributes/', views.AttributeListCreateAPIView.as_view(), name='attribute-list-create'),
-    path('attributes/<int:pk>/', views.AttributeDetailAPIView.as_view(), name='attribute-detail'),
+    path('attributes/<slug:slug>/', views.ProductAttributeView.as_view(), name='attributes'),
 ]
