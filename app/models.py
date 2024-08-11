@@ -44,8 +44,9 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=5, decimal_places=2)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     discount = models.DecimalField(max_digits=5, decimal_places=2)
-    user_likes = models.ManyToManyField(User)
-
+    user_like = models.ManyToManyField(User)
+    def __str__(self):
+        return self.name
     @property
     def discounted_price(self) -> Any:
         if self.discount > 0:

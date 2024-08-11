@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.utils.safestring import mark_safe
 
-from .models import Category, Product, Group, AttributeKey, AttributeValue, Comment, Image
+from .models import Category, Product, Group, AttributeKey, AttributeValue, Comment, Image, Attribute
 
 
 # admin.site.register(Category)
@@ -21,10 +21,10 @@ class CategoryAdmin(admin.ModelAdmin):
     get_image.short_description = 'Image'
 
 
-
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    fields = ['name', 'description', 'price', 'group', 'discount', 'user_like']
+    fields = ['name', 'description', 'price', 'group', 'discount', 'user_likes']
+
 
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):
@@ -43,9 +43,14 @@ class GroupAdmin(admin.ModelAdmin):
 class GroupAdmin(admin.ModelAdmin):
     fields = ['value']
 
+# admin.register(Attribute)
+@admin.register(Attribute)
+class GroupAdmin(admin.ModelAdmin):
+    fields = ['attribute_key', 'attribute_value', 'product']
+
 
 class CommentAdmin(admin.ModelAdmin):
-    list_display = ['rating', 'product', 'user',]
+    list_display = ['rating', 'product', 'user', ]
     readonly_fields = ['user']  # Optionally make the user field read-only
 
     def save_model(self, request, obj, form, change):
