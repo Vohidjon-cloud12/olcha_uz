@@ -1,5 +1,8 @@
 from django.db.models import Avg
 from rest_framework import serializers
+from rest_framework.authtoken.admin import User
+from rest_framework.authtoken.models import Token
+
 from app.models import Category, Product, Group, Attribute
 
 
@@ -8,10 +11,12 @@ class CategorySerializer(serializers.ModelSerializer):
         model = Category
         fields = '__all__'
 
+
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = '__all__'
+
 
 class ProductSerializer(serializers.ModelSerializer):
     avg_rating = serializers.SerializerMethodField()
@@ -50,15 +55,16 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         model = Product
         fields = '__all__'
 
+
 #
 # class ProductAttributeSerializer(serializers.ModelSerializer):
 #     class Meta:
 #         model = Product
 #         fields = ['id', 'name', 'slug','get_attributes']
 
-    # class Meta:
-    #     model = Category
-    #     fields = '__all__'
+# class Meta:
+#     model = Category
+#     fields = '__all__'
 class ProductAttributeSerializer(serializers.ModelSerializer):
     attributes = serializers.SerializerMethodField()
 
@@ -72,3 +78,52 @@ class ProductAttributeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'name', 'slug', 'attributes']
+
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField(max_length=100, required=True)
+    password = serializers.CharField(max_length=100, required=True)
+
+
+class RegisterSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(max_length=100, required=True)
+    first_name = serializers.CharField(max_length=100, required=False)
+    last_name = serializers.CharField(max_length=100, required=False)
+    password = serializers.CharField(max_length=100, required=True)
+    password2 = serializers.CharField(max_length=100, required=True)
+    email = serializers.EmailField(max_length=100, required=True)
+
+    class Meta:
+
+        model = User
+    fields = ('username', 'first_name', 'last_name', 'email', 'password', 'password2')
+
+
+def validate_username(self, username):
+    username = self.validated_data.get('username')
+    if User.objects.filter(username=username).exists():
+        raise serializers.ValidationError('Username already exists')
+    return username
+
+
+def validate(self, instance):
+    if instance.password != instance.password2:
+        data = {
+            'error': 'Passwords do not match',
+        }
+        raise serializers.ValidationError(data)
+
+    if User.objects.filter(email=instance['email']).exists():
+        raise serializers.ValidationError('Email already registered')
+
+    return instance
+
+
+def create(self, validated_data):
+    password = validated_data.pop('password')
+    password2 = validated_data.pop('password2')
+    user = User.objects.create_user(**validated_data)
+    user.set_password(password)
+    user.save()
+    Token.objects.create(user=user)
+    return user

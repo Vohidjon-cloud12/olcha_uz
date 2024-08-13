@@ -1,14 +1,19 @@
-# Create your views here.
+# Create your auth here.
 from django.shortcuts import get_object_or_404
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.views import APIView
+from rest_framework.authtoken.models import Token
 
 from app.models import Category, Product, Group, Attribute
 from app.serializers import CategorySerializer, ProductSerializer, GroupSerializer, ProductDetailSerializer, ProductAttributeSerializer
 
 
 class CategoryListApiView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
@@ -95,7 +100,7 @@ class GroupDetailApiView(generics.RetrieveUpdateDestroyAPIView):
     lookup_field = 'slug'
 
 
-# /views of products
+# /auth of products
 class ProductList(APIView):
     def get(self, request, category_slug, group_slug):
         products = Product.objects.filter(group__category__slug=category_slug, group__slug=group_slug)
