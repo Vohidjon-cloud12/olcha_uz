@@ -99,31 +99,26 @@ class RegisterSerializer(serializers.ModelSerializer):
     fields = ('username', 'first_name', 'last_name', 'email', 'password', 'password2')
 
 
-def validate_username(self, username):
-    username = self.validated_data.get('username')
-    if User.objects.filter(username=username).exists():
-        raise serializers.ValidationError('Username already exists')
-    return username
+    def validate_username(self, username):
+        if User.objects.filter(username=username).exists():
+            raise serializers.ValidationError('Username already exists')
+        return username
 
 
-def validate(self, instance):
-    if instance.password != instance.password2:
-        data = {
-            'error': 'Passwords do not match',
-        }
-        raise serializers.ValidationError(data)
+    def validate(self, instance):
+        if instance.password != instance.password2:
+            data = {
+                'error': 'Passwords do not match',
+            }
+            raise serializers.ValidationError(data)
 
-    if User.objects.filter(email=instance['email']).exists():
-        raise serializers.ValidationError('Email already registered')
+        if User.objects.filter(email=instance['email']).exists():
+            raise serializers.ValidationError('Email already registered')
 
-    return instance
+        return instance
 
 
-def create(self, validated_data):
-    password = validated_data.pop('password')
-    password2 = validated_data.pop('password2')
-    user = User.objects.create_user(**validated_data)
-    user.set_password(password)
-    user.save()
-    Token.objects.create(user=user)
-    return user
+    def create(self, validated_data):
+        validated_data.pop('password2')
+        user = User.objects.create_user(**validated_data)
+        return user

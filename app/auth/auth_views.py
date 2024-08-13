@@ -22,11 +22,11 @@ class LoginApiView(APIView):
             }
             if User.objects.filter(username=serializer.data['username']).exists():
                 user = User.objects.get(username=serializer.data['username'])
-                token = Token.objects.create(user)
+                # token = Token.objects.create(user)
                 response = {
                     'success': True,
                     'username': user.username,
-                    'token': token.key,
+                    # 'token': token.key,
                     'email': user.email,
                 }
                 return Response(response, status=status.HTTP_200_OK)
@@ -49,21 +49,17 @@ class LogoutApiView(APIView):
             status=status.HTTP_200_OK)
 
 class RegisterApiView(APIView):
-    def post(self, request, *args, **kwargs):
-        serializer = RegisterSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(
-                {
-                    'success': True,
-                    'message': 'Successfully registered.',
-                    'username': User.objects.get(username=serializer.validated_data['username']).username,
-                    'token' : Token.objects.get(
-                        user=User.objects.get(username=serializer.validated_data['username']).key
-                    )
+    queryset = User.objects.all()
+    serializer_class = RegisterSerializer
 
-                }
-            )
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, serializer):
+        user = serializer.save()
+        token, _ = Token.objects.get(user=user)
+        self.token = token.key
 
+    def create(self, request, *args, **kwargs):
+        response=super().create(request, *args, **kwargs)
+        response.data['success'] = True
+        response.data['token'] = self.token
+        return Response
 
