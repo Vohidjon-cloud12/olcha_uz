@@ -85,38 +85,27 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(max_length=100, required=True)
 
 
+
 class RegisterSerializer(serializers.ModelSerializer):
     username = serializers.CharField(max_length=100, required=True)
     first_name = serializers.CharField(max_length=100, required=False)
     last_name = serializers.CharField(max_length=100, required=False)
-    password = serializers.CharField(max_length=100, required=True)
-    password2 = serializers.CharField(max_length=100, required=True)
+    password = serializers.CharField(max_length=100, required=True, write_only=True)
+    password2 = serializers.CharField(max_length=100, required=True, write_only=True)
     email = serializers.EmailField(max_length=100, required=True)
 
     class Meta:
-
         model = User
-    fields = ('username', 'first_name', 'last_name', 'email', 'password', 'password2')
+        fields = ('username', 'first_name', 'last_name', 'email', 'password', 'password2')
 
+    def validate(self, data):
+        if data['password'] != data['password2']:
+            raise serializers.ValidationError({'password': 'Passwords do not match'})
 
-    def validate_username(self, username):
-        if User.objects.filter(username=username).exists():
-            raise serializers.ValidationError('Username already exists')
-        return username
+        if User.objects.filter(email=data['email']).exists():
+            raise serializers.ValidationError({'email': 'Email already registered'})
 
-
-    def validate(self, instance):
-        if instance.password != instance.password2:
-            data = {
-                'error': 'Passwords do not match',
-            }
-            raise serializers.ValidationError(data)
-
-        if User.objects.filter(email=instance['email']).exists():
-            raise serializers.ValidationError('Email already registered')
-
-        return instance
-
+        return data
 
     def create(self, validated_data):
         validated_data.pop('password2')
