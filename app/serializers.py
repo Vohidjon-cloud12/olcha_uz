@@ -20,7 +20,7 @@ class GroupSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     avg_rating = serializers.SerializerMethodField()
-    is_liked = serializers.SerializerMethodField()
+    user_like = serializers.SerializerMethodField()
     image = serializers.SerializerMethodField()
 
     def get_avg_rating(self, products):
@@ -30,11 +30,11 @@ class ProductSerializer(serializers.ModelSerializer):
         elif avg_rating > 0:
             return round(avg_rating, 2)
 
-    def get_is_liked(self, products):
+    def get_user_like(self, products):
         request = self.context.get('request')
         if request.user.is_authenticated:
-            if_liked = products.is_liked.filter(id=request.user.id).exists()
-            return if_liked
+            user_like = products.user_like.filter(id=request.user.id).exists()
+            return user_like
         return False
 
     def get_image(self, products):
@@ -47,7 +47,7 @@ class ProductSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'price', 'discount', 'discounted_price', 'is_liked', 'avg_rating', 'image']
+        fields = ['id', 'name', 'price', 'discount', 'discounted_price', 'user_like', 'avg_rating', 'image']
 
 
 class ProductDetailSerializer(serializers.ModelSerializer):
