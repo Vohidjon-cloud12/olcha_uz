@@ -56,15 +56,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-#
-# class ProductAttributeSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Product
-#         fields = ['id', 'name', 'slug','get_attributes']
 
-# class Meta:
-#     model = Category
-#     fields = '__all__'
 class ProductAttributeSerializer(serializers.ModelSerializer):
     attributes = serializers.SerializerMethodField()
 

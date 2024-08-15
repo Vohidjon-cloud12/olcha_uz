@@ -1,7 +1,7 @@
 # Create your auth here.
 from django.shortcuts import get_object_or_404
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.views import APIView
@@ -9,11 +9,11 @@ from rest_framework.authtoken.models import Token
 
 from app.models import Category, Product, Group, Attribute
 from app.serializers import CategorySerializer, ProductSerializer, GroupSerializer, ProductDetailSerializer, ProductAttributeSerializer
-
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 class CategoryListApiView(generics.ListAPIView):
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [TokenAuthentication]
+    # permission_classes = [IsAuthenticated]
+    # authentication_classes = [JWTAuthentication]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
@@ -101,13 +101,33 @@ class GroupDetailApiView(generics.RetrieveUpdateDestroyAPIView):
 
 
 # /auth of products
-class ProductList(APIView):
-    def get(self, request, category_slug, group_slug):
-        products = Product.objects.filter(group__category__slug=category_slug, group__slug=group_slug)
-        serializer = ProductSerializer(products, many=True, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
+# class ProductList(APIView):
+#     def get(self, request, category_slug, group_slug):
+#         products = Product.objects.filter(group__category__slug=category_slug, group__slug=group_slug)
+#         serializer = ProductSerializer(products, many=True, context={'request': request})
+#         return Response(serializer.data, status=status.HTTP_200_OK)
 
+class ProductListView(generics.ListCreateAPIView):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+    lookup_field = 'slug'
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication]
 
+    def get_queryset(self):
+        category_slug = self.kwargs.get('category_slug')
+        group_slug = self.kwargs.get('group_slug')
+
+        queryset = Product.objects.all()
+
+        if category_slug and group_slug:
+            queryset = queryset.filter(group__category__slug=category_slug, group__slug=group_slug)
+        elif category_slug:
+            queryset = queryset.filter(category__slug=category_slug)
+        elif group_slug:
+            queryset = queryset.filter(group__slug=group_slug)
+
+        return queryset
 
 class ProductDetail(APIView):
     def get(self, request, category_slug, group_slug, product_slug):
