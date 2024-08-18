@@ -1,19 +1,19 @@
 # Create your auth here.
 from django.shortcuts import get_object_or_404
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.generics import ListCreateAPIView
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework import generics, status
 from rest_framework.views import APIView
 from rest_framework.authtoken.models import Token
 
+from app import permissions
 from app.models import Category, Product, Group, Attribute
 from app.serializers import CategorySerializer, ProductSerializer, GroupSerializer, ProductDetailSerializer, ProductAttributeSerializer
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.authentication     import JWTAuthentication
 
 class CategoryListApiView(generics.ListAPIView):
-    # permission_classes = [IsAuthenticated]
-    # authentication_classes = [JWTAuthentication]
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
 
@@ -48,11 +48,12 @@ class CategoryDetail(generics.RetrieveAPIView):
 class CreateCategoryView(generics.CreateAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-
+    permission_classes = (permissions.IsSuperAdminOrReadOnly,)
 
 class UpdateCategoryView(generics.UpdateAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = (permissions.IsSuperAdminOrReadOnly,)
 
     def get(self, request, *args, **kwargs):
         slug = self.kwargs['slug']
@@ -111,7 +112,7 @@ class ProductListView(generics.ListCreateAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
     lookup_field = 'slug'
-    permission_classes = [IsAuthenticated]
+    permission_classes = [permissions.IsOwnerIsAuthenticated]
     authentication_classes = [JWTAuthentication]
 
     def get_queryset(self):
@@ -155,3 +156,8 @@ class ProductAttributeView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductAttributeSerializer
     lookup_field = 'slug'
+
+
+# class PostApiView(ListCreateAPIView):
+#     queryset = Post.objects.all()
+#     serializer_class = PostSerialazer

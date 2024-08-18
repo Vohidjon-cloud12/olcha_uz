@@ -99,8 +99,6 @@ class LogoutApiView(APIView):
     authentication_classes = [JWTAuthentication]
 
     def post(self, request, *args):
-        # JWT bilan autentifikatsiyada logout jarayoni odatda mijoz tarafida tokenni o'chirish bilan amalga oshiriladi
-        # ammo server tomonida istalgan vaqtda refresh tokenni o'chirib tashlash mumkin
         try:
             token = RefreshToken(request.data['refresh_token'])
             token.blacklist()
