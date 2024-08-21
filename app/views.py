@@ -1,6 +1,7 @@
 # Create your auth here.
 from django.shortcuts import get_object_or_404
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.exceptions import NotFound
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -10,8 +11,10 @@ from rest_framework.authtoken.models import Token
 
 from app import permissions
 from app.models import Category, Product, Group, Attribute
-from app.serializers import CategorySerializer, ProductSerializer, GroupSerializer, ProductDetailSerializer, ProductAttributeSerializer
-from rest_framework_simplejwt.authentication     import JWTAuthentication
+from app.serializers import CategorySerializer, ProductSerializer, GroupSerializer, ProductDetailSerializer, \
+    ProductAttributeSerializer
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 
 class CategoryListApiView(generics.ListAPIView):
     queryset = Category.objects.all()
@@ -21,6 +24,7 @@ class CategoryListApiView(generics.ListAPIView):
 class CategoryDetail(generics.RetrieveAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    permission_classes = (permissions.IsSuperAdminOrReadOnly,)
 
     def retrieve(self, request, *args, **kwargs):
         slug = self.kwargs['slug']
@@ -49,6 +53,7 @@ class CreateCategoryView(generics.CreateAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
     permission_classes = (permissions.IsSuperAdminOrReadOnly,)
+
 
 class UpdateCategoryView(generics.UpdateAPIView):
     queryset = Category.objects.all()
@@ -94,6 +99,12 @@ class GroupListView(generics.ListAPIView):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
 
+    def get_object(self):
+        obj = get_object_or_404(Group, slug=self.kwargs['slug'])
+        if not obj:
+            raise NotFound("Group not found")
+        return obj
+
 
 class GroupDetailApiView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Group.objects.all()
@@ -130,6 +141,7 @@ class ProductListView(generics.ListCreateAPIView):
 
         return queryset
 
+
 class ProductDetail(APIView):
     def get(self, request, category_slug, group_slug, product_slug):
         product = Product.objects.get(slug=product_slug)
@@ -150,13 +162,10 @@ class ProductDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-
-
 class ProductAttributeView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.all()
     serializer_class = ProductAttributeSerializer
     lookup_field = 'slug'
-
 
 # class PostApiView(ListCreateAPIView):
 #     queryset = Post.objects.all()

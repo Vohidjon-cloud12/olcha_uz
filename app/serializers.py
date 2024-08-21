@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.authtoken.admin import User
 from rest_framework.authtoken.models import Token
 
-from app.models import Category, Product, Group, Attribute
+from app.models import Category, Product, Group, Attribute,Comment
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -71,6 +71,16 @@ class ProductAttributeSerializer(serializers.ModelSerializer):
         model = Product
         fields = ['id', 'name', 'slug', 'attributes']
 
+class CommentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = '__all__'
+
+    def create(self, validated_data):
+        request = self.context.get('request')
+        if request and request.user:
+            validated_data['user'] = request.user
+        return super().create(validated_data)
 
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField(max_length=100, required=True)

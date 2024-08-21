@@ -6,6 +6,14 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 
+class TimestampedModel(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        abstract = True
+
+
 class Category(models.Model):
     title = models.CharField(max_length=100)
     slug = models.SlugField(unique=True, blank=True)
@@ -21,7 +29,7 @@ class Category(models.Model):
         super(Category, self).save(*args, **kwargs)
 
 
-class Group(models.Model):
+class Group(TimestampedModel):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True, blank=True)
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
@@ -37,7 +45,7 @@ class Group(models.Model):
         super(Group, self).save(*args, **kwargs)
 
 
-class Product(models.Model):
+class Product(TimestampedModel):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True, blank=True)
     description = models.TextField()
@@ -45,12 +53,14 @@ class Product(models.Model):
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
     discount = models.DecimalField(max_digits=5, decimal_places=2)
     user_like = models.ManyToManyField(User)
+
     def __str__(self):
         return self.name
+
     @property
     def discounted_price(self) -> Any:
         if self.discount > 0:
-            return self.price*(1-(self.discount/100))
+            return self.price * (1 - (self.discount / 100))
         return self.price
 
     def save(self, *args, **kwargs):
@@ -103,7 +113,7 @@ class Attribute(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
 
 
-class Comment(models.Model):
+class Comment(TimestampedModel):
     class Rating(models.IntegerChoices):
         One = 1
         Two = 2
@@ -117,9 +127,11 @@ class Comment(models.Model):
     file = models.FileField(upload_to='comments/', null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='comments')
 
+
 class Image(models.Model):
     image = models.ImageField(upload_to='images/products/')
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='images')
     is_primary = models.BooleanField(default=False)
+
     def __str__(self):
         return self.product.name
