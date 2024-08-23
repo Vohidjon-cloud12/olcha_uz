@@ -1,4 +1,5 @@
 from django.urls import path
+from django.views.decorators.cache import cache_page
 
 from app import views
 from app.auth import auth_views
@@ -17,7 +18,7 @@ urlpatterns = [
     # group  urls
     path('group-list/', views.GroupListView.as_view(), name='group-list'),
     path('group/<slug:slug>/', views.GroupDetailApiView.as_view(), name='group-detail'),
-    path('attributes/<slug:slug>/', views.ProductAttributeView.as_view(), name='attributes'),
+    path('attributes/<slug:slug>/', cache_page(60*5)(views.ProductAttributeView.as_view()), name='product-attributes'),
     # auth View
     path('login-page/', auth_views.LoginApiView.as_view()),
     path('logout-page/', auth_views.LogoutApiView.as_view()),

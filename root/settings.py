@@ -193,3 +193,52 @@ INTERNAL_IPS = [
     "127.0.0.1",
     # ...
 ]
+
+# CACHES dictionary which contains caching configurations.
+CACHES = {
+    # a cache alias or name. In this case, we use "default" as the alias.
+    "default": {
+        # Here, we're using the in-memory cache backend.
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+
+        # LOCATION parameter gives a unique name or identifier to this cache instance.
+        "LOCATION": "unique-snowflake",
+    }
+}
+
+# A CACHES dictionary, which contains caching configurations.
+# CACHES = {
+#     # we use "default" as the alias.
+#     "default": {
+#         # Here, we're using the file-based cache backend.
+#         "BACKEND": "django.core.cache.backends.filebased.FileBasedCache",
+#
+#         # LOCATION parameter to specify the file system path where cached data will be stored.
+#         "LOCATION": "/var/tmp/django_cache",
+#     }
+# }
+
+# CACHES dictionary, which contains caching configurations.
+# CACHES = {
+#     # we use "default" as the alias.
+#     "default": {
+#         # Here, we're using the database-backed cache backend.
+#         "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+#
+#         # Provide a LOCATION parameter to specify the database table name where cached data will be stored.
+#         "LOCATION": "my_cache_table",
+#     }
+# }
+
+# A dictionary named CACHES, which contains caching configurations.
+# CACHES = {
+#     # "default" is the alias.
+#     "default": {
+#         # Here, we're using the Redis cache backend.
+#         "BACKEND": "django.core.cache.backends.redis.RedisCache",
+#
+#         # A LOCATION parameter to specify the Redis server's address and port.
+#         "LOCATION": "redis://127.0.0.1:6379",
+#     }
+# }
+
